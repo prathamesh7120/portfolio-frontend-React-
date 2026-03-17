@@ -204,7 +204,7 @@ function Hero() {
                 
                   <span className="text-white/40 text-xs"></span>
                   <span className="text-white/20 text-[10px] mt-1">
-                    /public/photo.jpg
+                   
                   </span>
                 </div>
 
