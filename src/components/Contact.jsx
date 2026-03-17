@@ -175,7 +175,7 @@ function Contact() {
             {/* Info cards */}
             <div className="space-y-3">
               {[
-                { label: 'Email',    value: 'prathamesh@email.com', color: 'text-indigo-400' },
+                { label: 'Email',    value: 'chavanprathamesh813@gmail.com', color: 'text-indigo-400' },
                 { label: 'Location', value: 'Pune, Maharashtra',     color: 'text-cyan-400'   },
                 { label: 'Status',   value: 'Open to opportunities', color: 'text-green-400'  },
               ].map(info => (
