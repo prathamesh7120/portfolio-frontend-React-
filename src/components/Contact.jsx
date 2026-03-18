@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import AnimateOnScroll from './AnimateOnScroll'
-import api from '../api/axios' // ✅ USE YOUR API INSTANCE
+import api from '../api/axios'
 
 const socials = [
   { label: 'GitHub',   border: 'border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10', text: 'text-indigo-400', link: '#' },
@@ -31,13 +31,7 @@ function Contact() {
     setErrMsg('')
 
     try {
-      // ✅ FIXED: using api instance instead of localhost
-      await api.post('/contact', {
-        name: form.name,
-        email: form.email,
-        subject: form.subject,
-        message: form.message,
-      })
+      await api.post('/contact', form)
 
       setStatus('sent')
       setForm({ name: '', email: '', subject: '', message: '' })
@@ -52,7 +46,7 @@ function Contact() {
       } else if (err.request) {
         setErrMsg('Cannot reach server. Check backend deployment.')
       } else {
-        setErrMsg('Something went wrong. Please try again.')
+        setErrMsg('Something went wrong.')
       }
 
       setTimeout(() => setStatus('idle'), 5000)
@@ -62,6 +56,7 @@ function Contact() {
   return (
     <section id="contact" className="relative z-10 py-24 px-8 md:px-20">
 
+      {/* Heading */}
       <AnimateOnScroll direction="up">
         <div className="flex items-center gap-4 mb-6">
           <span className="text-indigo-400 font-mono text-sm">06.</span>
@@ -79,32 +74,82 @@ function Contact() {
 
       <div className="grid md:grid-cols-2 gap-12 items-start">
 
-        {/* FORM */}
+        {/* LEFT: FORM */}
         <AnimateOnScroll direction="left" delay={0.15}>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
 
+            {/* Name + Email */}
             <div className="grid grid-cols-2 gap-4">
-              <input type="text" name="name" value={form.name} onChange={handleChange} required placeholder="Your name" className="input" />
-              <input type="email" name="email" value={form.email} onChange={handleChange} required placeholder="your@email.com" className="input" />
+              <input
+                type="text"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                placeholder="Your name"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all duration-300"
+              />
+
+              <input
+                type="email"
+                name="email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                placeholder="your@email.com"
+                className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all duration-300"
+              />
             </div>
 
-            <input type="text" name="subject" value={form.subject} onChange={handleChange} required placeholder="Subject" className="input" />
+            {/* Subject */}
+            <input
+              type="text"
+              name="subject"
+              value={form.subject}
+              onChange={handleChange}
+              required
+              placeholder="Subject"
+              className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all duration-300"
+            />
 
-            <textarea name="message" value={form.message} onChange={handleChange} required rows={5} placeholder="Write your message..." className="input" />
+            {/* Message */}
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              required
+              rows={5}
+              placeholder="Write your message..."
+              className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all duration-300 resize-none"
+            />
 
+            {/* Error */}
             {status === 'error' && (
-              <div className="text-red-400 text-xs">⚠️ {errMsg}</div>
+              <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-4 py-3 rounded-lg">
+                ⚠️ {errMsg}
+              </div>
             )}
 
+            {/* Button */}
             <motion.button
               type="submit"
               disabled={status === 'sending' || status === 'sent'}
-              className="btn"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className={`
+                w-full py-3 rounded-lg text-sm font-medium transition-all duration-300
+                ${status === 'sent'
+                  ? 'bg-green-500/20 border border-green-500/40 text-green-400'
+                  : status === 'error'
+                    ? 'bg-red-500/20 border border-red-500/40 text-red-400'
+                    : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white shadow-[0_0_20px_#6366f130] hover:shadow-[0_0_30px_#6366f150]'
+                }
+              `}
             >
               {status === 'idle' && 'Send Message →'}
               {status === 'sending' && 'Sending...'}
-              {status === 'sent' && '✓ Message Sent'}
-              {status === 'error' && '✕ Try Again'}
+              {status === 'sent' && '✓ Message Sent Successfully!'}
+              {status === 'error' && '✕ Failed — Try Again'}
             </motion.button>
 
           </form>
@@ -112,18 +157,32 @@ function Contact() {
 
         {/* RIGHT SIDE */}
         <AnimateOnScroll direction="right" delay={0.2}>
-          <div className="space-y-6 text-white/60">
-            <p>Email: chavanprathamesh813@gmail.com</p>
-            <p>Location: Pune, Maharashtra</p>
-            <p>Status: Open to opportunities</p>
+          <div className="space-y-8">
 
-            <div className="flex gap-2 flex-wrap">
-              {socials.map(s => (
-                <a key={s.label} href={s.link} className="text-xs border px-4 py-2 rounded-lg">
-                  {s.label}
-                </a>
+            <div className="space-y-3">
+              {[
+                { label: 'Email', value: 'chavanprathamesh813@gmail.com', color: 'text-indigo-400' },
+                { label: 'Location', value: 'Pune, Maharashtra', color: 'text-cyan-400' },
+                { label: 'Status', value: 'Open to opportunities', color: 'text-green-400' },
+              ].map(info => (
+                <div key={info.label} className="flex items-center gap-4 bg-white/[0.02] border border-white/[0.06] rounded-xl px-5 py-4">
+                  <span className="text-white/30 text-xs w-16">{info.label}</span>
+                  <span className={`text-sm ${info.color}`}>{info.value}</span>
+                </div>
               ))}
             </div>
+
+            <div>
+              <p className="text-white/30 text-xs mb-3">Find me on</p>
+              <div className="flex flex-wrap gap-2">
+                {socials.map(s => (
+                  <a key={s.label} href={s.link} className={`text-xs border px-4 py-2 rounded-lg transition-all duration-300 ${s.border} ${s.text}`}>
+                    {s.label}
+                  </a>
+                ))}
+              </div>
+            </div>
+
           </div>
         </AnimateOnScroll>
 
