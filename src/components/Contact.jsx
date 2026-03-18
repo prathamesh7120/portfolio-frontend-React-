@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import AnimateOnScroll from './AnimateOnScroll'
-import api from '../api/axios' // ✅ USE THIS
+import api from '../api/axios' // ✅ USE YOUR API INSTANCE
 
 const socials = [
   { label: 'GitHub',   border: 'border-indigo-500/30 hover:border-indigo-500/60 hover:bg-indigo-500/10', text: 'text-indigo-400', link: '#' },
@@ -11,7 +11,13 @@ const socials = [
 ]
 
 function Contact() {
-  const [form, setForm] = useState({ name: '', email: '', subject: '', message: '' })
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  })
+
   const [status, setStatus] = useState('idle')
   const [errMsg, setErrMsg] = useState('')
 
@@ -25,7 +31,7 @@ function Contact() {
     setErrMsg('')
 
     try {
-      // ✅ FIXED: Using api instead of axios + no localhost
+      // ✅ FIXED: using api instance instead of localhost
       await api.post('/contact', {
         name: form.name,
         email: form.email,
@@ -44,7 +50,7 @@ function Contact() {
       if (err.response) {
         setErrMsg(`Server error: ${err.response.status}`)
       } else if (err.request) {
-        setErrMsg('Cannot reach server. Check backend or CORS.')
+        setErrMsg('Cannot reach server. Check backend deployment.')
       } else {
         setErrMsg('Something went wrong. Please try again.')
       }
@@ -56,30 +62,72 @@ function Contact() {
   return (
     <section id="contact" className="relative z-10 py-24 px-8 md:px-20">
 
-      <div className="flex items-center gap-4 mb-6">
-        <span className="text-indigo-400 font-mono text-sm">06.</span>
-        <h2 className="text-3xl font-bold text-white">Contact</h2>
-        <div className="flex-1 h-px bg-white/10 max-w-xs" />
+      <AnimateOnScroll direction="up">
+        <div className="flex items-center gap-4 mb-6">
+          <span className="text-indigo-400 font-mono text-sm">06.</span>
+          <h2 className="text-3xl font-bold text-white">Contact</h2>
+          <div className="flex-1 h-px bg-white/10 max-w-xs" />
+        </div>
+      </AnimateOnScroll>
+
+      <AnimateOnScroll direction="up" delay={0.1}>
+        <p className="text-white/40 text-base max-w-lg mb-12 leading-relaxed">
+          Open to full-time roles and freelance projects. Drop a message
+          and I'll get back within 24 hours.
+        </p>
+      </AnimateOnScroll>
+
+      <div className="grid md:grid-cols-2 gap-12 items-start">
+
+        {/* FORM */}
+        <AnimateOnScroll direction="left" delay={0.15}>
+          <form onSubmit={handleSubmit} className="space-y-4">
+
+            <div className="grid grid-cols-2 gap-4">
+              <input type="text" name="name" value={form.name} onChange={handleChange} required placeholder="Your name" className="input" />
+              <input type="email" name="email" value={form.email} onChange={handleChange} required placeholder="your@email.com" className="input" />
+            </div>
+
+            <input type="text" name="subject" value={form.subject} onChange={handleChange} required placeholder="Subject" className="input" />
+
+            <textarea name="message" value={form.message} onChange={handleChange} required rows={5} placeholder="Write your message..." className="input" />
+
+            {status === 'error' && (
+              <div className="text-red-400 text-xs">⚠️ {errMsg}</div>
+            )}
+
+            <motion.button
+              type="submit"
+              disabled={status === 'sending' || status === 'sent'}
+              className="btn"
+            >
+              {status === 'idle' && 'Send Message →'}
+              {status === 'sending' && 'Sending...'}
+              {status === 'sent' && '✓ Message Sent'}
+              {status === 'error' && '✕ Try Again'}
+            </motion.button>
+
+          </form>
+        </AnimateOnScroll>
+
+        {/* RIGHT SIDE */}
+        <AnimateOnScroll direction="right" delay={0.2}>
+          <div className="space-y-6 text-white/60">
+            <p>Email: chavanprathamesh813@gmail.com</p>
+            <p>Location: Pune, Maharashtra</p>
+            <p>Status: Open to opportunities</p>
+
+            <div className="flex gap-2 flex-wrap">
+              {socials.map(s => (
+                <a key={s.label} href={s.link} className="text-xs border px-4 py-2 rounded-lg">
+                  {s.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </AnimateOnScroll>
+
       </div>
-
-      <p className="text-white/40 text-base max-w-lg mb-12 leading-relaxed">
-        Open to full-time roles and freelance projects.
-      </p>
-
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-
-        <input name="name" value={form.name} onChange={handleChange} placeholder="Name" required />
-        <input name="email" value={form.email} onChange={handleChange} placeholder="Email" required />
-        <input name="subject" value={form.subject} onChange={handleChange} placeholder="Subject" required />
-        <textarea name="message" value={form.message} onChange={handleChange} placeholder="Message" required />
-
-        {status === 'error' && <p style={{ color: 'red' }}>{errMsg}</p>}
-
-        <button type="submit" disabled={status === 'sending'}>
-          {status === 'sending' ? 'Sending...' : 'Send Message'}
-        </button>
-
-      </form>
     </section>
   )
 }
