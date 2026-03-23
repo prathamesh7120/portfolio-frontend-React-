@@ -25,32 +25,46 @@ function Contact() {
     setForm({ ...form, [e.target.name]: e.target.value })
   }
 
+  // 🔥 UPDATED SUBMIT LOGIC (SMART RETRY)
   const handleSubmit = async (e) => {
     e.preventDefault()
     setStatus('sending')
     setErrMsg('')
 
-    try {
-      await api.post('/contact', form)
+    let attempts = 0
+    const maxAttempts = 3
 
-      setStatus('sent')
-      setForm({ name: '', email: '', subject: '', message: '' })
+    const sendRequest = async () => {
+      try {
+        await api.post('/contact', form)
 
-      setTimeout(() => setStatus('idle'), 4000)
+        setStatus('sent')
+        setForm({ name: '', email: '', subject: '', message: '' })
 
-    } catch (err) {
-      setStatus('error')
+        setTimeout(() => setStatus('idle'), 4000)
 
-      if (err.response) {
-        setErrMsg(`Server error: ${err.response.status}`)
-      } else if (err.request) {
-        setErrMsg('Cannot reach server. Check backend deployment.')
-      } else {
-        setErrMsg('Something went wrong.')
+      } catch (err) {
+        attempts++
+
+        // ⏳ Backend sleeping / no response
+        if (!err.response && attempts < maxAttempts) {
+          setErrMsg('⏳ Server is starting... please wait')
+          setTimeout(sendRequest, 3000)
+        } else {
+          setStatus('error')
+
+          if (err.response) {
+            setErrMsg(`Server error: ${err.response.status}`)
+          } else {
+            setErrMsg('Server is slow. Please try again.')
+          }
+
+          setTimeout(() => setStatus('idle'), 5000)
+        }
       }
-
-      setTimeout(() => setStatus('idle'), 5000)
     }
+
+    sendRequest()
   }
 
   return (
@@ -123,14 +137,21 @@ function Contact() {
               className="w-full bg-white/[0.04] border border-white/10 rounded-lg px-4 py-3 text-white text-sm placeholder:text-white/20 focus:outline-none focus:border-indigo-500/50 focus:bg-white/[0.06] transition-all duration-300 resize-none"
             />
 
-            {/* Error */}
+            {/* 🔥 SENDING MESSAGE */}
+            {status === 'sending' && (
+              <div className="bg-yellow-500/10 border border-yellow-500/30 text-yellow-400 text-xs px-4 py-3 rounded-lg">
+                🚀 Connecting to server... (first request may take few seconds)
+              </div>
+            )}
+
+            {/* ERROR MESSAGE */}
             {status === 'error' && (
               <div className="bg-red-500/10 border border-red-500/30 text-red-400 text-xs px-4 py-3 rounded-lg">
                 ⚠️ {errMsg}
               </div>
             )}
 
-            {/* Button */}
+            {/* BUTTON */}
             <motion.button
               type="submit"
               disabled={status === 'sending' || status === 'sent'}

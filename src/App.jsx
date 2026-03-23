@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useEffect } from 'react' // ✅ ADDED
+import { useEffect } from 'react'
 import { AuthProvider } from './context/AuthContext'
-import api from './api/axios' // ✅ ADDED
+import api from './api/axios'
 
 import Cursor             from './components/Cursor'
 import ParticleBackground from './components/ParticleBackground'
@@ -41,26 +41,11 @@ function Portfolio() {
 
 function App() {
 
-  // 🔥 BACKEND AUTO WAKE-UP (PRO LEVEL UX)
+  // ✅ SILENT BACKEND WAKE-UP (NO UI)
   useEffect(() => {
-    let attempts = 0
-
-    const wakeUpServer = async () => {
-      try {
-        await api.get('/projects') // public API
-        console.log('✅ Backend is awake')
-      } catch (err) {
-        if (attempts < 5) {
-          attempts++
-          console.log('⏳ Waking up backend... attempt:', attempts)
-          setTimeout(wakeUpServer, 3000)
-        } else {
-          console.log('❌ Backend still sleeping')
-        }
-      }
-    }
-
-    wakeUpServer()
+    api.get('/projects').catch(() => {
+      console.log('⏳ Backend waking silently...')
+    })
   }, [])
 
   return (
